@@ -190,24 +190,22 @@ class TowerResolver {
                     // invokeExtension on local variable
                     TowerData.OnlyImplicitReceiver(implicitReceiver).process()?.let { return it }
 
-                    if (processor.mayNeedBothTowerLevelAndImplicitReceiver) {
-                        // local extensions for implicit receiver
-                        for (localLevel in localLevels) {
-                            TowerData.BothTowerLevelAndImplicitReceiver(localLevel, implicitReceiver).process()?.let { return it }
-                        }
+                    // local extensions for implicit receiver
+                    for (localLevel in localLevels) {
+                        TowerData.BothTowerLevelAndImplicitReceiver(localLevel, implicitReceiver).process()?.let { return it }
+                    }
 
-                        // extension for implicit receiver
-                        if (nonLocalLevels == null) {
-                            nonLocalLevels = arrayListOf()
-                            for (nonLocalLevel in createNonLocalLevels(name, scopesToRecordLookups)) {
-                                TowerData.BothTowerLevelAndImplicitReceiver(nonLocalLevel, implicitReceiver).process()?.let { return it }
-                                nonLocalLevels.add(nonLocalLevel)
-                            }
+                    // extension for implicit receiver
+                    if (nonLocalLevels == null) {
+                        nonLocalLevels = arrayListOf()
+                        for (nonLocalLevel in createNonLocalLevels(name, scopesToRecordLookups)) {
+                            TowerData.BothTowerLevelAndImplicitReceiver(nonLocalLevel, implicitReceiver).process()?.let { return it }
+                            nonLocalLevels.add(nonLocalLevel)
                         }
-                        else {
-                            for (nonLocalLevel in nonLocalLevels) {
-                                TowerData.BothTowerLevelAndImplicitReceiver(nonLocalLevel, implicitReceiver).process()?.let { return it }
-                            }
+                    }
+                    else {
+                        for (nonLocalLevel in nonLocalLevels) {
+                            TowerData.BothTowerLevelAndImplicitReceiver(nonLocalLevel, implicitReceiver).process()?.let { return it }
                         }
                     }
                 }
