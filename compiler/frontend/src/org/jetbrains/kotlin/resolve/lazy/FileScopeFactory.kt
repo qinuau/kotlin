@@ -243,7 +243,6 @@ class FileScopeFactory(
 
             override fun definitelyDoesNotContainName(name: Name, location: LookupLocation): Boolean {
                 if (names?.let { name in it } != false) return false
-                packageView.memberScope.recordLookup(name, location)
                 return true
             }
 

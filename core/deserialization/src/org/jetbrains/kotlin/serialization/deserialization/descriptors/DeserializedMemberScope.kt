@@ -79,7 +79,6 @@ abstract class DeserializedMemberScope protected constructor(
     override fun getClassifierNames(): Set<Name>? = classNames + typeAliasNames
 
     override fun definitelyDoesNotContainName(name: Name, location: LookupLocation): Boolean {
-        recordLookup(name, location)
         return name !in functionNamesLazy && name !in variableNamesLazy && name !in classNames && name !in typeAliasNames
     }
 

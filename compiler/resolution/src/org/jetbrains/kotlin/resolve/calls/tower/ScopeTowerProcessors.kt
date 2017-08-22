@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.resolve.calls.tower
 
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind
+import org.jetbrains.kotlin.resolve.scopes.ResolutionScope
 import org.jetbrains.kotlin.resolve.scopes.receivers.DetailedReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValueWithSmartCastInfo
@@ -35,6 +36,15 @@ class CompositeScopeTowerProcessor<out C>(
         vararg val processors: ScopeTowerProcessor<C>
 ) : ScopeTowerProcessor<C> {
     override fun process(data: TowerData): List<Collection<C>> = processors.flatMap { it.process(data) }
+
+    override fun recordLookups(scopes: Collection<ResolutionScope>) {
+        processors.forEach { it.recordLookups(scopes) }
+    }
+
+    override val mayNeedBothTowerLevelAndImplicitReceiver: Boolean by lazy(LazyThreadSafetyMode.NONE) {
+        processors.any(ScopeTowerProcessor<C>::mayNeedBothTowerLevelAndImplicitReceiver)
+    }
+
 }
 
 // use this if all processors has same priority
@@ -42,6 +52,14 @@ class CompositeSimpleScopeTowerProcessor<C : Candidate>(
         private vararg val processors: SimpleScopeTowerProcessor<C>
 ): SimpleScopeTowerProcessor<C> {
     override fun simpleProcess(data: TowerData): Collection<C> = processors.flatMap { it.simpleProcess(data) }
+    override fun recordLookups(scopes: Collection<ResolutionScope>) {
+        processors.forEach { it.recordLookups(scopes) }
+    }
+
+    override val mayNeedBothTowerLevelAndImplicitReceiver: Boolean by lazy(LazyThreadSafetyMode.NONE) {
+        processors.any(ScopeTowerProcessor<C>::mayNeedBothTowerLevelAndImplicitReceiver)
+    }
+
 }
 
 internal abstract class AbstractSimpleScopeTowerProcessor<C: Candidate>(
@@ -132,6 +150,8 @@ private class NoExplicitReceiverScopeTowerProcessor<C: Candidate>(
                 else -> emptyList()
             }
 
+    override val mayNeedBothTowerLevelAndImplicitReceiver: Boolean
+        get() = true
 }
 
 private fun <C : Candidate> createSimpleProcessorWithoutClassValueReceiver(

@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.builtins.isBuiltinExtensionFunctionalType
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.calls.tasks.ExplicitReceiverKind
 import org.jetbrains.kotlin.resolve.calls.tasks.createSynthesizedInvokes
+import org.jetbrains.kotlin.resolve.scopes.ResolutionScope
 import org.jetbrains.kotlin.resolve.scopes.receivers.DetailedReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValueWithSmartCastInfo
 import org.jetbrains.kotlin.util.OperatorNameConventions
@@ -32,6 +33,8 @@ abstract class AbstractInvokeTowerProcessor<C : Candidate>(
     // todo optimize it
     private val previousData = ArrayList<TowerData>()
     private val invokeProcessors: MutableList<Collection<VariableInvokeProcessor>> = ArrayList()
+
+    protected fun hasInvokeProcessors() = invokeProcessors.isNotEmpty()
 
     private inner class VariableInvokeProcessor(
             var variableCandidate: C,
@@ -110,6 +113,11 @@ class InvokeTowerProcessor<C : Candidate>(
 
     override fun mayDataBeApplicable(data: TowerData) =
             data is TowerData.Empty || data is TowerData.TowerLevel
+
+    override fun recordLookups(scopes: Collection<ResolutionScope>) {
+        if (!hasInvokeProcessors()) return
+        scopes.forEach { it.recordLookup(OperatorNameConventions.INVOKE, scopeTower.location) }
+    }
 }
 
 class InvokeExtensionTowerProcessor<C : Candidate>(
